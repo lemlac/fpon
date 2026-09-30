@@ -17,8 +17,9 @@ You can declare local variables using a `let <variable> = <expression> in <body 
 
 ```fpon
 # Define a function that increments a number, then call it with 2
+let value = 2 in
 let addOne = x -> x + 1 in
-addOne 2
+addOne value
 # Result: 3
 ```
 
