@@ -1,5 +1,5 @@
 # FPON (Functional Programming Object Notation)
-FPON is an experimental, purely functional data notation language. It explores a unified approach to data representation by treating data structures and functions as the exact same concept.
+FPON is an experimental, purely functional data notation language. It explores a unified approach to data representation by treating data structures and functions as the exact same concept. [Permalink to the playground](https://play.rust-lang.org/?version=stable&mode=debug&edition=2024&gist=ab8a2bfc81fc27bb0c67a6ee08223608)
 
 Every FPON file evaluates to exactly one expression, making it a clean configuration and data serialization format similar to JSON or Nix.
 
