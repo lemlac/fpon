@@ -1,45 +1,65 @@
-FPON (Functional Programming Object Notation) is a purely functional form of object notation similar to JSON. This is an experimental language to test a new way of looking at data. 
+# FPON (Functional Programming Object Notation)
+FPON is an experimental, purely functional data notation language. It explores a unified approach to data representation by treating data structures and functions as the exact same concept.
 
-The basic element of FPON is the function, notated using an arrow (`->`, *hyphen + greater-than sign*). Functions in FPON must have exactly 1 input and 1 output. Comments can be written using a hash (`#`) which comments out text to the end of the line.
+Every FPON file evaluates to exactly one expression, making it a clean configuration and data serialization format similar to JSON or Nix.
+
+## 1. Everything is a Function
+The fundamental building block of FPON is the function, written using an arrow (`->`). Every function must have exactly one input and exactly one output.
+Line comments are supported using the hash (`#`) symbol.
 
 ```fpon
-# Identity function:
+# The identity function: takes x, returns x
 x -> x
 ```
 
-Every FPON file must only contain one expression, similar to JSON or Nix. Variables can be declared with the `let _ = _ in` expression. Placing an argument after a function will call it.
+## 2. Variable Definitions & Call Syntax
+You can declare local variables using a `let <variable> = <expression> in <body expression>`. To call a function, simply place the argument immediately after it.
 
 ```fpon
-let addOne = x -> x + 1 in addOne 2   # Result: 2 + 1 which is 3
+# Define a function that increments a number, then call it with 2
+let addOne = x -> x + 1 in addOne 2
+# Result: 3
 ```
 
-Most languages have some kind of a map type, sometimes called "objects" or "dictionaries". This type takes 1 input (a key) and returns 1 output (a value). In a way, a map is a kind of function. FPON takes this idea to heart. **Maps** in FPON are a collection of functions which use pattern matching to call the first matching function. One type of pattern is a string literal. Maps are marked with curly braces `{}` and each function in it is separated by commas (`,`).
+## 3. Maps are Pattern-Matching Functions
+In traditional languages, maps (objects or dictionaries) map a key to a value. In FPON, a map is literally a function that accepts a key as an input and returns a value as an output.
+
+Maps are enclosed in curly braces `{}`. Inside, they contain a comma-separated collection of functions that use pattern matching. When called, the map executes the first function whose pattern matches the input.
 
 ```fpon
 {
   "status" -> "success",
-  # Nested map
+  
+  # Nested map configuration
   "data" -> {
-    "id" -> 1234,
-    "sentiment" -> "positive",
+    "id"               -> 1234,
+    "sentiment"        -> "positive",
     "confidence-score" -> 0.96,
-    "summary" -> "The user is highly satisfied with the new update, specifically praising the faster loading speeds and sleek UI overhaul.",
-    "locked" -> false,
-    "parent" -> null,
+    "summary"          -> "The user praised the faster loading speeds and sleek UI overhaul.",
+    "is-locked"        -> false,
+    "parent-id"        -> null, # Trailing commas are fully supported
   },
 }
 ```
 
-Accessing a map is the same as calling a functions. Use multiple arguments to get from a nested map.
+## 4. Navigating Deep Data
+Because maps are just functions, looking up a key is identical to invoking a function. To dig into nested maps, simply pass multiple arguments sequentially.
 
 ```fpon
-let obj = {
-  "a" -> {
-    "b" -> {
-      "c" -> "value"
+let userProfile = {
+  "account" -> {
+    "preferences" -> {
+      "theme" -> "dark"
     }
   }
-} in o "a" "b" "c"     # Result: "value"
+} in
+# Pass keys sequentially to traverse the structure
+userProfile "account" "preferences" "theme"
+# Result: "dark"
 ```
 
-This is a rough outline of the language so far. Feedback is welcomed: either through the [issues](https://github.com/lemlac/fpon/issues) page or contact me directly via [email](mailto:13686726+lemlac@users.noreply.github.com).
+## 🤝 Feedback & Contributing
+FPON is highly experimental, and your feedback is incredibly valuable!
+
+* Bug Reports & Feature Requests: Please open an [issue](https://github.com/lemlac/fpon/issues) on GitHub.
+* Direct Contact: Feel free to reach out to the author via [email](13686726+lemlac@users.noreply.github.com).
