@@ -66,4 +66,4 @@ FPON is highly experimental, and your feedback is incredibly valuable!
 * Bug Reports & Feature Requests: Please open an [issue](https://github.com/lemlac/fpon/issues) on GitHub.
 * Direct Contact: Feel free to reach out to the author via [email](13686726+lemlac@users.noreply.github.com).
 
-Also see [use case](./docs/use-cases.md).
+Also see [use cases](./docs/use-cases.md).
