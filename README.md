@@ -13,11 +13,12 @@ x -> x
 ```
 
 ## 2. Variable Definitions & Call Syntax
-You can declare local variables using a `let <variable> = <expression> in <body expression>`. To call a function, simply place the argument immediately after it.
+You can declare local variables using a `let <variable> = <expression> in <body expression>`. Whitespace is insignificant, so the body expression can be optionally placed on the next line. To call a function, simply place the argument immediately after it.
 
 ```fpon
 # Define a function that increments a number, then call it with 2
-let addOne = x -> x + 1 in addOne 2
+let addOne = x -> x + 1 in
+addOne 2
 # Result: 3
 ```
 
