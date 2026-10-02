@@ -60,6 +60,10 @@ userProfile "account" "preferences" "theme"
 # Result: "dark"
 ```
 
+## 5. And more..
+
+See [Basics](#./docs/basics.md) for more information on this and other planned features of FPON. 
+
 ## 🤝 Feedback & Contributing
 FPON is highly experimental, and your feedback is incredibly valuable!
 
