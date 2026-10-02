@@ -1,5 +1,9 @@
+# Use Cases for FPON
+
 FPON’s core architecture makes it a powerful fit for systems where configuration, data transformation, and logic must exist in a single, safe file format. By ensuring everything evaluates to a single expression and treating maps as functions, it fills a unique gap between static formats like JSON and overly complex Turing-complete language environments.
+
 Here are the primary applications where FPON would excel:
+
 ## 1. Programmable Configuration Management
 Traditional configuration formats like JSON, YAML, and TOML are static. When developers need dynamic behaviors (like environment-specific variables or computed paths), they are forced to switch to complex languages like Nix, Jsonnet, or Dhall.
 
@@ -28,11 +32,11 @@ Data pipelines often require converting data formats from one layout to another 
 ## Direct Comparison: FPON vs. Existing Formats
 
 | Format | Execution Logic? | Native Pattern Matching? | Primary Strength | Weakness for Complex Data |
-|---|---|---|---|---|
+|--:|:-:|:-:|:--|:--|
 | JSON | ❌ No | ❌ No | Universal compatibility | Forces copy-pasting for repetitive structures |
-| Nix | Yes | ❌ No | Powerful lazy evaluation | Steep learning curve, heavy runtime overhead |
-| Dhall | Yes | ❌ No | Total functional safety | Verbose type system for quick data definitions |
-| FPON | ** Yes** | ** Yes** | Unified data & functions | Experimental ecosystem (requires custom tooling) |
+| Nix | ✔️ Yes | ❌ No | Powerful lazy evaluation | Steep learning curve, heavy runtime overhead |
+| Dhall | ✔️ Yes | ❌ No | Total functional safety | Verbose type system for quick data definitions |
+| FPON | ✔️ **Yes** | ✔️ **Yes** | Unified data & functions | Experimental ecosystem (requires custom tooling) |
 
 Which of these use cases aligns most closely with your long-term vision for FPON? Knowing this can help us optimize the design of the compiler/interpreter for that specific workload!
 
