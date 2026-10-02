@@ -12,9 +12,11 @@ Fallback operator `<|>` example:
 let defaults = { "theme" -> "light", "lang" -> "en" } in
 let overrides = { "theme" -> "dark" } in
 let config = overrides <|> defaults in
-config "theme"   # "dark"  (left wins)
-config "lang"    # "en"    (falls through to defaults)
-config "other"   # no match in either, so a miss
+{
+  "theme" -> config "theme",   # "dark"  (left wins)
+  "lang"  -> config "lang",    # "en"    (falls through to defaults)
+  "other" -> config "other",   # no match in either, so a miss
+}
 ```
 
 Since maps are also functions, `|>` can be applied to a map literal to effectively get a switch/match statement.
