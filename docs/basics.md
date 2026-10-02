@@ -1,6 +1,6 @@
-# FPON Basics: Language Design & Implementation Guide
+# FPON Basics: Language Design
 
-This document expands on the core FPON concepts from the README, providing deeper dives into language semantics, patterns, edge cases, and design decisions for implementers.
+This document expands on the core FPON concepts from the [README](../README.md), providing deeper dives into language semantics, patterns, edge cases, and design decisions for implementers.
 
 ## 1. Functions: The Fundamental Unit
 
@@ -103,7 +103,7 @@ f 5
 # Result: 15 (uses the inner x = 20)
 ```
 
-**Design Note**: The scoping precedence must be clarified during parsing. Does `let x = 10 in let f = y -> x + y in let x = 20 in f 5` capture the outer `x` at function definition time or lookup time? FPON should use **lexical scoping with late binding** (lookup at call time).
+FPON uses **lexical scoping with late binding** (lookup at call time). That means `let x = 10 in let f = y -> x + y in let x = 20 in f 5` captures the outer `x` at function definition time or lookup time.
 
 ## 2. Advanced Variable Binding
 
@@ -150,7 +150,7 @@ result
 # The outer value is only accessible outside the inner scope
 ```
 
-**Implementation Note**: Track scoping depth during parsing. Each `let` introduces a new scope level. Variable lookup must search from innermost to outermost scope.
+Scoping depth is tracked during parsing. Each `let` introduces a new scope level. Variable lookup must search from innermost to outermost scope.
 
 ## 3. Maps: More Than Just Data
 
@@ -188,7 +188,7 @@ response 999
 # Result: "Unknown Status Code"
 ```
 
-**Design Note**: Should `_` be a reserved wildcard symbol? Or should any unbound variable act as a catch-all? Recommend treating `_` as an explicit catch-all to avoid accidental matches.
+`_` is a reserved wildcard symbol. It's used as an explicit catch-all to avoid accidental matches.
 
 ### 3.3 Nested Maps & Deep Navigation
 
@@ -296,7 +296,7 @@ abs -5
 # Result: 5
 ```
 
-**Design Note**: This pattern relies on boolean values being used as keys. Should booleans automatically convert to string keys, or should maps support multiple key types? Consider implementing type coercion or requiring explicit string conversion.
+The keys of each map are patterns. A pattern can either be a literal -- such as strings, numbers, or (as in this example) Booleans -- or be a variable like `x` (or `_` when the variable is unused).
 
 ## 4. Type System Considerations
 
@@ -321,40 +321,26 @@ data "string"
 # Result: "hello"
 ```
 
-### 4.2 Type Coercion & Conversion
-
-How should the language handle type mismatches?
-
-```fpon
-# Should this work? Does the key auto-convert to a string?
-let obj = {
-  "name" -> "Alice",
-} in
-obj 123  # or obj "123"?
-```
-
-**Recommendation**: Require explicit string keys for maps. Allow implicit number/boolean/string conversions in arithmetic operations.
-
-### 4.3 Type Errors & Edge Cases
+### 4.2 Type Errors & Edge Cases
 
 **Missing Keys**:
+
 ```fpon
 let obj = {
   "a" -> 1,
 } in
 obj "b"
-# Should this throw an error or return null?
 ```
 
-**Recommendation**: Throw a clear "Key not found" error during interpretation. Include the attempted key and available keys in the error message.
+If a pattern doesn't match in a map, then a "Pattern not found" error will throw during interpretation. The attempted key and available keys will also be included in the error message.
 
 **Type Mismatches in Operations**:
+
 ```fpon
 let result = "hello" + 5
-# Should this error or coerce?
 ```
 
-**Recommendation**: Throw a type error. Don't allow implicit coercion between incompatible types.
+If an operation on two types doesn't exist (like in this case `Number + Number` and `String + String` exists but not `String + Number`) then a type error will be thrown. Implicit coercion between incompatible types is not allowed.
 
 ## 5. Common Patterns & Idioms
 
@@ -466,10 +452,10 @@ status "success" "description"
 
 ```fpon
 let result = undefinedVar + 5
-# Should throw: "Variable 'undefinedVar' is not defined"
+# Error: "Variable 'undefinedVar' is not defined"
 ```
 
-**Implementation**: Track all bound variables during parsing. At interpretation, raise an error for unbound variable access.
+All bound variables are tracked during parsing. At interpretation, an error is raised for unbound variable access.
 
 ### 6.2 Arity Mismatches
 
@@ -479,27 +465,22 @@ f 5  # Returns a partial application
 # Result: (y -> 5 + y)
 
 f 5 3  # Full application
+# Step 1: (y -> 5 + y) 3
+# Step 2: 5 + 3
 # Result: 8
 
 f 5 3 7  # Extra argument
-# What happens here?
+# Step 1: (y -> 5 + y) 3 7
+# Step 2: (5 + 3) 7
+# Step 3: 8 7
+# Error: Couldn't match expected type ‘a -> b’ with actual type ‘Number’.
 ```
 
-**Design Decision**: Should extra arguments be ignored, or should this error? Recommendation: **Allow** extra arguments but only pass what the function accepts (or implement function chaining where the result becomes the input to the next argument).
+Functions are chained, so adding too many arguments *usually* results in an error. If result type can't be called like a function (for example primitives such as numbers, strings, and booleans), then having an extra argument will result in a type error. 
 
-### 6.3 Circular References
+### 6.3 Map Pattern Ambiguity
 
-```fpon
-let x = x + 1 in
-x
-# Infinite recursion during evaluation
-```
-
-**Implementation**: Detect during evaluation. Set a maximum recursion depth and throw a stack overflow error.
-
-### 6.4 Map Pattern Ambiguity
-
-What if multiple patterns could match?
+Maps can have duplicate keys since keys are really patterns for each function within the map. The **first matching pattern** will be used.
 
 ```fpon
 let obj = {
@@ -507,42 +488,59 @@ let obj = {
   "a" -> 2,  # Duplicate key
 } in
 obj "a"
-# Which value is returned?
+# Result: 1
 ```
 
-**Recommendation**: The **first matching pattern** is used. Duplicates should trigger a **compile-time warning** or error, depending on strictness settings.
+Potentially, FPON could support a strictness setting so that duplicates trigger a **compile-time warning**.
 
-### 6.5 Operations on Incompatible Types
+Recall that maps in FPON are functions. In another langauge (like JavaScript in this example) it would look like this:
+
+```js
+function obj(key) {
+    switch (key) {
+        case "a": return 1;
+        case "a": return 2;
+    }
+}
+obj("a")
+// Result: 1
+```
+
+### 6.4 Operations on Incompatible Types
 
 ```fpon
-let result = true + "string"
+true + "string"
 # Type error: cannot add boolean and string
+```
 
-let result = {
+```fpon
+{
   "a" -> 1,
 } + 5
 # Type error: cannot add map and number
 ```
 
-**Implementation**: Perform type checking during evaluation. Provide clear error messages with the types involved.
+Type checking is performed during evaluation. Clear error messages will be provided with the types involved.
 
 ## 7. Parsing & Whitespace
 
 ### 7.1 Whitespace Insignificance
 
-Whitespace is fully insignificant except within string literals:
+Whitespace is fully insignificant except within string literals.
+
+**All equivalent:**
+- `x -> x + 1`
+- `x->x+1`
+- `x   ->   x   +   1`
+- ```fpon
+  # Multi-line
+  x -> 
+    x + 1
+  ```
+
+Indentation is useful for readability but is ignored in FPON.
 
 ```fpon
-# All equivalent:
-x -> x + 1
-x->x+1
-x   ->   x   +   1
-
-# Multi-line
-x -> 
-  x + 1
-
-# Indentation for readability (ignored)
 let config = {
   "a" -> 1,
   "b" -> 2,
@@ -561,19 +559,17 @@ x + 1
 # Result: 6
 ```
 
-**Design Note**: Should block comments (/* */) be supported? For now, recommend only line comments for simplicity.
+Block comments are not supported. For now, there are only line comments. 
 
 ### 7.3 String Literals
 
-Strings use double quotes. How should escape sequences be handled?
+Strings use double quotes. Escaping is handed with a backslash `\`.
 
 ```fpon
-let greeting = "Hello\nWorld" in
-greeting
-# Does this support \n, \t, \\, \", etc.?
+"Hello\nWorld"
 ```
 
-**Recommendation**: Support standard escape sequences (`\n`, `\t`, `\\`, `\"`, `\'`).
+Standard escape sequences (`\n`, `\t`, `\\`, `\"`, `\'`, etc.) are supported.
 
 ## 8. Operator Precedence & Associativity
 
@@ -586,7 +582,9 @@ Standard precedence (highest to lowest):
 ```fpon
 2 + 3 * 4
 # Result: 14 (not 20)
+```
 
+```fpon
 10 - 5 - 2
 # Result: 3 (left-associative: (10 - 5) - 2)
 ```
@@ -598,12 +596,22 @@ Comparison operators (`==`, `!=`, `<`, `>`, `<=`, `>=`) should return booleans:
 ```fpon
 5 > 3
 # Result: true
+```
 
+```fpon
 10 == 10
 # Result: true
 ```
 
-**Design Note**: Clarify precedence relative to arithmetic. Recommend: arithmetic binds tighter than comparison.
+Arithmetic binds tighter than comparison.
+
+```
+let value = 10 in
+value + 1 > 10
+# Step 1: 10 + 1 > 10
+# Step 2: 11 > 10
+# Result: true
+```
 
 ### 8.3 Arrow Operator (Right-Associative)
 
@@ -628,103 +636,6 @@ f x y z
 # Equivalent to:
 ((f x) y) z
 ```
-
-## 9. Implementation Strategy
-
-### 9.1 Parser Output
-
-The parser should produce an Abstract Syntax Tree (AST) with nodes for:
-- **Literals**: numbers, strings, booleans, null
-- **Variables**: identifiers
-- **Functions**: `Fn { param, body }`
-- **Applications**: `App { func, arg }`
-- **Let-bindings**: `Let { var, value, body }`
-- **Maps**: `Map { patterns }` where patterns are key-value pairs
-- **Binary operations**: `BinOp { op, left, right }`
-
-### 9.2 Interpreter Evaluation
-
-Use an environment/scope map during evaluation:
-
-```
-eval(env, expr):
-  match expr:
-    Literal(v) -> v
-    Variable(name) -> lookup(env, name)
-    Fn(param, body) -> closure(param, body, env)
-    App(func, arg) -> 
-      f = eval(env, func)
-      a = eval(env, arg)
-      call(f, a)
-    Let(var, value, body) ->
-      v = eval(env, value)
-      new_env = extend(env, var, v)
-      eval(new_env, body)
-    Map(patterns) -> 
-      // Create a function that pattern-matches on keys
-    BinOp(op, left, right) ->
-      l = eval(env, left)
-      r = eval(env, right)
-      apply_op(op, l, r)
-```
-
-### 9.3 Error Reporting
-
-Maintain source location info in the AST:
-
-```
-struct Node {
-  expr: Expr,
-  line: usize,
-  column: usize,
-}
-
-struct Error {
-  message: String,
-  location: (usize, usize),
-  context: String,  // Line of source code
-}
-```
-
-## 10. Future Considerations
-
-### 10.1 Pattern Matching in Functions
-
-Could FPON support pattern matching in function parameters?
-
-```fpon
-# Hypothetical: destructure on input
-{x, y} -> x + y
-
-# Or match on shape:
-{name: n, age: a} -> n
-```
-
-### 10.2 Type Annotations
-
-Should type annotations be optional or required?
-
-```fpon
-# Hypothetical:
-let add = (x: Number) -> (y: Number) -> Number = x -> y -> x + y
-```
-
-### 10.3 Recursion
-
-How should recursion be handled? Does FPON support named recursion?
-
-```fpon
-# Hypothetical: Y-combinator pattern
-let factorial = (f -> n -> (n == 0) -> {
-  true -> 1,
-  false -> n * f (n - 1),
-}) in
-factorial factorial 5
-```
-
-### 10.4 Standard Library
-
-What built-in functions should FPON provide? (length, contains, map, filter, etc.)
 
 ---
 
