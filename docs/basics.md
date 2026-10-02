@@ -1,6 +1,6 @@
 # FPON Basics: Language Design
 
-This document expands on the core FPON concepts from the [README](../README.md), providing deeper dives into language semantics, patterns, edge cases, and design decisions for implementers.
+This document expands on the core FPON concepts from the [README](../README.md), providing deeper dives into language semantics, patterns, and edge cases.
 
 ## 1. Functions: The Fundamental Unit
 
@@ -8,21 +8,24 @@ This document expands on the core FPON concepts from the [README](../README.md),
 
 All functions in FPON follow the lambda calculus model: `x -> body`. The arrow operator is **right-associative**, meaning nested functions are curried by default.
 
-```fpon
-# Simple identity
-x -> x
-
-# Function that returns a function
-x -> (y -> x + y)
-
-# This is equivalent to:
-x -> y -> x + y
-
-# When called, this becomes:
-let add = x -> y -> x + y in
-add 5 3
-# Result: 8
-```
+- **Simple identity:**
+  ```fpon
+  x -> x
+  ```
+- **Function that returns a function:**
+  ```fpon
+  x -> (y -> x + y)
+  ```
+  This is equivalent to:
+  ```fpon
+  x -> y -> x + y
+  ```
+  When called, this becomes:
+  ```fpon
+  let add = x -> y -> x + y in
+  add 5 3
+  # Result: 8
+  ```
 
 ### 1.2 Currying & Partial Application
 
