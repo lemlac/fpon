@@ -16,7 +16,7 @@ world"
 # Error: line break literal within string
 ```
 
-Curly braces within a string literal calls on **string interpolation.** A literal curly brace can be escaped with a backslash like this `\{` which disables string interpolation. Whatever value is between the curly braces will get implicitly converted to a string, so explicit conversion isn't necessary. 
+Curly braces within a string literal is used for **string interpolation.** Whatever value is between the curly braces will get implicitly converted to a string, so explicit conversion isn't necessary. A literal curly brace can be escaped in a string with a backslash like this `\{` which disables string interpolation. 
 
 ```fpon
 let name = "Bob" in
@@ -45,9 +45,7 @@ let text =
 in text
 ```
 
-The main use case for this would be for embedding documents as strings within a configuration file.
-
-A couple more examples:
+The main use case for this type of string is for **embedding documents** as strings within a configuration file. Here are some examples of this:
 
 ```fpon
 {
@@ -58,7 +56,7 @@ A couple more examples:
     \\    <h1>Hello From FPON</h1>
     \\  </body>
     \\</html>
-    , # Comma needs to be on the next line after the last line of the raw string.
+    , # Commas need to be on the next line after the last line of the raw string.
   "file_name" -> "index.html",
   "output_directory" -> "./dist/public",
   "file_size_bytes" -> 104,
