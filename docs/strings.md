@@ -22,14 +22,14 @@ world"
 
 Curly braces inside a string literal perform **string interpolation**. The expression between the braces is evaluated and implicitly converted to a string; no explicit conversion is required.
 
-To include a literal curly brace, escape it with a backslash (`\{` or `\}`). This disables interpolation for that brace.
-
 ```fpon
 let name = "Bob" in
 let score = 95 in
 "{name} scored {score} points"
 # Result: "Bob scored 95 points"
 ```
+
+To include a literal curly brace, escape it with a backslash (`\{` or `\}`). This disables interpolation for that brace.
 
 ```fpon
 "Use \{curly braces\} for interpolation"
