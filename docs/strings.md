@@ -69,6 +69,11 @@ Whitespace is insignificant, so you can also write it like this.
 userProfile.account.preferences.theme
 ```
 
+Either format works for comparison and pattern matching. For example, both of these expressions are true:
+
+- `userProfile.account.preferences.theme == "dark"`
+- `userProfile.account.preferences.theme == .dark`
+
 ## Doc Strings
 
 Outside of a string literal, the `\\` syntax is used to define **raw multi-line string literals.**
