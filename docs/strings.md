@@ -1,43 +1,59 @@
 # Strings in FPON
 
-## Standard
+## Standard Strings
 
-Strings use double quotes. Escaping is handed with a backslash `\`.
+String literals are enclosed in double quotes. The backslash (`\`) is used for escaping.
 
 ```fpon
 "Hello\nWorld"
 ```
 
-Standard escape sequences (`\n`, `\t`, `\\`, `\"`, `\'`, etc.) are supported.
+Standard escape sequences are supported, including `\n`, `\t`, `\\`, `\"`, and `\'`.
 
-Strings literals be defined in a single line. Line breaks can be escaped with `\n`, but literal line breaks in a string result in a syntax error.
+String literals must be written on a single line. Literal line breaks inside a string are a syntax error; use the escape sequence `\n` instead.
 
 ```fpon
 "Hello
 world"
-# Error: line break literal within string
+# Error: literal line break inside string
 ```
 
 ## Interpolation
 
-Curly braces within a string literal is used for **string interpolation.** Whatever value is between the curly braces will get implicitly converted to a string, so explicit conversion isn't necessary. A literal curly brace can be escaped in a string with a backslash like this `\{` which disables string interpolation. 
+Curly braces inside a string literal perform **string interpolation**. The expression between the braces is evaluated and implicitly converted to a string; no explicit conversion is required.
+
+To include a literal curly brace, escape it with a backslash (`\{` or `\}`). This disables interpolation for that brace.
 
 ```fpon
 let name = "Bob" in
 let score = 95 in
 "{name} scored {score} points"
-# Result: "Bob scored 95 points."
+# Result: "Bob scored 95 points"
+```
+
+```fpon
+"Use \{curly braces\} for interpolation"
+# Result: "Use {curly braces} for interpolation"
 ```
 
 ## Word Strings
 
-Maps in FPON are called the same way as functions instead of using dot notation (`.`) like in other languages. Keys can be any type, but the most common type to use is string. Since the period is free for other purposes in FPON, it's used to create **"word string" literals**. These strings only contain valid word characters (`A-Za-z0-9_`) and stop at the first non-word character. This makes them raw strings since other symbols like backslashes `\` for escaping or curly braces `{}` for interpolation can't be used. A word string must not be empty or else it's a syntax error. Word strings are equivalent to standard strings that contain the same characters.
+In FPON, maps are applied like functions rather than with the familiar dot notation (`.`) found in many other languages. Map keys can be of any type, but strings are by far the most common.
+
+Because the period is not used for field access, FPON repurposes it to introduce **word string** literals. A word string:
+
+- Consists only of word characters (`A-Za-z0-9_`)
+- Stops at the first non-word character
+- Cannot be empty (an empty word string is a syntax error)
+- Is a raw string: escape sequences and interpolation are not supported
+
+Word strings are equivalent to ordinary double-quoted strings that contain the same characters:
 
 ```fpon
 .word == "word"
 ```
 
-This let's you use the familiar dot notation with maps. The following two examples are equivalent.
+This design enables a convenient dot-style syntax for map access. The following two expressions are equivalent:
 
 ```fpon
 let userProfile = {
@@ -63,40 +79,54 @@ userProfile .account .preferences .theme
 # Result: .dark
 ```
 
-Whitespace is insignificant, so you can also write it like this.
+Because whitespace is insignificant, the same access can also be written without spaces:
 
 ```fpon
 userProfile.account.preferences.theme
 ```
 
-Either format works for comparison and pattern matching. For example, both of these expressions are true:
-
-- `userProfile.account.preferences.theme == "dark"`
-- `userProfile.account.preferences.theme == .dark`
-
-## Doc Strings
-
-Outside of a string literal, the `\\` syntax is used to define **raw multi-line string literals.**
-
-**Core Rules of `\\` Strings:**
-
-- **No Escape Sequences:** Everything inside a multi-line string literal is parsed exactly as written. For example, `\n` or `\t` inside the block are treated as literal backslashes followed by the letters 'n' or 't', rather than a newline or a tab. 
-- **Implicit Newlines:** The compiler automatically adds a newline character (`\n`) at the end of each line, except for the very last line.
-- **Stripped Leading Whitespace:** Any indentation before the `\\` is ignored by the compiler, allowing you to align your code neatly without introducing unwanted padding into the string itself.
-- **Line Termination:** A `\\` string continues until a line that doesn't start with `\\`. Each `\\`-prefixed line becomes a line in the same string, with an automatic newline appended (except after the final line). An empty `\\` with nothing after it produces a blank line in the output.
-
-Basic Usage Example:
+Both the double-quoted and word-string forms work interchangeably for comparison and pattern matching:
 
 ```fpon
-# The compiler reads this as a single string with embedded newlines
+userProfile.account.preferences.theme == "dark"   # true
+```
+
+```fpon
+userProfile.account.preferences.theme == .dark    # true
+```
+
+## Raw Multi-line Strings
+
+Outside of a regular string literal, the `\\` prefix introduces a **raw multi-line string** (sometimes called a doc string).
+
+### Core Rules
+
+- **No escape sequences**  
+  Everything is taken literally. Sequences such as `\n` or `\t` appear in the resulting string as a backslash followed by the letter `n` or `t`.
+
+- **Implicit newlines**  
+  The compiler inserts a newline (`\n`) after every line except the final one.
+
+- **Stripped leading whitespace**  
+  Indentation that appears before the `\\` is ignored, so you can indent the block to match the surrounding code without adding unwanted spaces to the string.
+
+- **Line termination**  
+  A multi-line string continues until a line that does not begin with `\\`. An empty `\\` line (nothing after the prefix) produces a blank line in the output.
+
+### Basic Example
+
+```fpon
+# The compiler treats the following as a single string containing embedded newlines
 let text =
   \\Line 1: Hello World!
-  \\Line 2: Escape sequences like \n don't work here.
-  \\Line 3: This behaves similarly to line comments.
+  \\Line 2: Escape sequences like \n are treated literally.
+  \\Line 3: This syntax is reminiscent of line comments.
 in text
 ```
 
-The main use case for this type of string is for **embedding documents** as strings within a configuration file. Here are some examples of this:
+### Typical Use: Embedding Documents in Configuration
+
+The primary purpose of raw multi-line strings is to embed documents (HTML, shell scripts, SQL, etc.) inside configuration values.
 
 ```fpon
 {
@@ -107,12 +137,12 @@ The main use case for this type of string is for **embedding documents** as stri
     \\    <h1>Hello From FPON</h1>
     \\  </body>
     \\</html>
-    , # Commas need to be on the next line after the last line of the raw string.
+  ,  # Note: the comma must appear on the line after the final \\ line
   "file_name" -> "index.html",
   "output_directory" -> "./dist/public",
   "file_size_bytes" -> 104,
   "created_at" -> "2026-10-02T18:35:00Z",
-  "updated_at" -> "2026-10-02T18:35:00Z",
+  "updated_at" -> "2026-10-02T18:35:00Z"
 }
 ```
 
@@ -123,7 +153,7 @@ The main use case for this type of string is for **embedding documents** as stri
 
   "metadata" -> {
     "description" -> "Automated script to verify external service availability",
-    "author" -> "DevOps Team",
+    "author" -> "DevOps Team"
   },
 
   "config" -> {
@@ -132,18 +162,18 @@ The main use case for this type of string is for **embedding documents** as stri
     "allow_failure" -> false,
     "environment" -> {
       "STAGE" -> "production",
-      "LOG_LEVEL" -> "DEBUG",
-    },
+      "LOG_LEVEL" -> "DEBUG"
+    }
   },
 
-  # Shell script
+  # Embedded shell script
   "run" ->
     \\CURL="/bin/curl"
     \\JQ="/bin/jq"
     \\
     \\echo "Checking GitHub API Status..."
     \\
-    \\# Fetch data and parse it using the interpolated tools
+    \\# Fetch data using the tools defined above
     \\$CURL -s "https://api.github.com"
     \\
     \\echo ""
