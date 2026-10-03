@@ -1,5 +1,7 @@
 # Strings in FPON
 
+## Standard
+
 Strings use double quotes. Escaping is handed with a backslash `\`.
 
 ```fpon
@@ -16,6 +18,8 @@ world"
 # Error: line break literal within string
 ```
 
+## Interpolation
+
 Curly braces within a string literal is used for **string interpolation.** Whatever value is between the curly braces will get implicitly converted to a string, so explicit conversion isn't necessary. A literal curly brace can be escaped in a string with a backslash like this `\{` which disables string interpolation. 
 
 ```fpon
@@ -24,6 +28,26 @@ let score = 95 in
 "{name} scored {score} points"
 # Result: "Bob scored 95 points."
 ```
+
+## Word Strings
+
+Maps in FPON are called the same way as functions instead of using dot notation (`.`) like in other languages. Keys can be any type, but the most common type to use is string. Since the period is free for other purposes in FPON, it's used to create **"word string" literals**. These strings only contain valid word characters (`A-Za-z0-9_`) and stop at the first non-word character. This makes them raw strings since other symbols like backslashes `\` for escaping or curly braces `{}` for interpolation can't be used. A word string must not be empty or else it's a syntax error. Word strings are equivalent to standard strings that contain the same characters.
+
+```fpon
+.word == "word"
+```
+
+This let's you use the familiar dot notation with maps. The following two examples are equivalent.
+
+```fpon
+
+```
+
+```fpon
+
+```
+
+## Doc Strings
 
 Outside of a string literal, the `\\` syntax is used to define **raw multi-line string literals.**
 
