@@ -40,11 +40,33 @@ Maps in FPON are called the same way as functions instead of using dot notation 
 This let's you use the familiar dot notation with maps. The following two examples are equivalent.
 
 ```fpon
-
+let userProfile = {
+  "account" -> {
+    "preferences" -> {
+      "theme" -> "dark"
+    }
+  }
+} in
+userProfile "account" "preferences" "theme"
+# Result: "dark"
 ```
 
 ```fpon
+let userProfile = {
+  .account -> {
+    .preferences -> {
+      .theme -> .dark
+    }
+  }
+} in
+userProfile .account .preferences .theme
+# Result: .dark
+```
 
+Whitespace is insignificant, so you can also write it like this.
+
+```fpon
+userProfile.account.preferences.theme
 ```
 
 ## Doc Strings
